@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <title>Página de registro</title>
+</head>
+
+<body>
+    <!--Contenedor principal-->
+    <div class="container">
+        <!-- Modal -->
+        <div class="modal fade" id="modalFormularioActualizar" data-bs-backdrop="static" data-bs-keyboard="false"
+            tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="staticBackdropLabel">Formulario para actualizar</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="formEditarUsuario">
+                            <div class="mb-3">
+                                <input type="hidden" id="editarIdUsuario">
+                                <label for="editarNombre" class="form-label">Nombre</label>
+                                <input type="text" class="form-control" id="editarNombre" name="editarNombre">
+                            </div>
+                            <div class="mb-3">
+                                <label for="editarApellidos" class="form-label">Apellidos</label>
+                                <input type="text" class="form-control" id="editarApellidos" name="editarApellidos">
+                            </div>
+                            <div class="mb-3">
+                                <label for="editarEmail" class="form-label">Email</label>
+                                <input type="text" class="form-control" id="editarEmail" name="editarEmail">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-primary" onclick="actualizarUsuario()"
+                            data-bs-dismiss="modal">Actualizar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--Modal de estado - respuesta del sensor-->
+        <div class="modal fade" id="estadoModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalLabel">Estado Actual</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="estadoTexto">Cargando...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--Toast para mostrar enviar comandos a la ruta de comandos-->
+        <div>
+            <div class="toast-container position-fixed bottom-0 end-0 p-3">
+                <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="toast-header">
+                        <img src="../static/images/icono_huellado.png" class="rounded me-2" alt="..." width="25"
+                            height="25">
+                        <strong class="me-auto">Sistema de autenticación biométrica</strong>
+                        <small id="hora_toast"></small>
+                        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                    <div class="toast-body" id="cuerpo_toast">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--Navbar con logo y titulo del sistema-->
+        <div>
+            <nav class="navbar bg-body-tertiary">
+                <div class="container-fluid">
+                    <a class="navbar-brand" href="/">
+                        <img src="../static/images/icono_huellado.png" alt="Logo" width="25" height="25"
+                            class="d-inline-block align-text-top">
+                        Sistema de autenticación biométrica
+                    </a>
+                    <a class="navbar-brand" href="/monitorear_entradas">
+                        <img src="../static/images/icono_entrada.png" alt="Logo" width="25" height="25"
+                            class="d-inline-block align-text-top">
+                        Monitorear entradas
+                    </a>
+                    <a class="navbar-brand" href="/monitorear_salidas">
+                        <img src="../static/images/icono_salida.png" alt="Logo" width="25" height="25"
+                            class="d-inline-block align-text-top">
+                        Monitorear salidas
+                    </a>
+                </div>
+            </nav>
+        </div>
+        <!--Contenedor secundario (para el formulario, tabla)-->
+        <div class="row">
+            <!--Contenedor del formulario-->
+            <div class="col-md-4">
+                <!--Formulario de registro-->
+                <form id="registroForm">
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre</label>
+                        <input type="text" class="form-control" id="nombre" name="nombre" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="apellidos" class="form-label">Apellidos</label>
+                        <input type="text" class="form-control" id="apellidos" name="apellidos" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                    <div class="mb-3 d-grid gap-2">
+                        <input type="submit" value="Aceptar" class="btn btn-primary">
+                    </div>
+                    <div class="mb-3 d-grid gap-2">
+                        <input type="button" value="Vincular huella" class="btn btn-secondary" id="vincularHuellaButton"
+                            onclick="sendComandoHuellaId()">
+                    </div>
+                </form>
+            </div>
+            <!--Contenedor de la tabla-->
+            <div class="col-md-8">
+                <!--Botones para probar envío de comandos-->
+                <div class="d-flex">
+                    <button class="btn btn-secondary flex-fill m-1" type="button" onclick="obtenerRegistros()">Obtener
+                        registros</button>
+                </div>
+                <!--Contenedor para la tabla-->
+                <table class="table table-hover" id="usuariosTable">
+                    <thead>
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">Nombre</th>
+                            <th scope="col">Apellidos</th>
+                            <th scope="col">Email</th>
+                            <th scope="col">Vinculado</th>
+                            <th scope="col">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="table-group-divider">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/funciones_principal.js') }}"></script>
+</body>
+
+</html>
